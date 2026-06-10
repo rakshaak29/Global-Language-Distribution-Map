@@ -1,4 +1,4 @@
-# 🌍 Global Language Distribution Map
+# Global Language Distribution Map
 
 A Flutter application that visualizes the world's **8,618 cataloged languages** across an interactive map. Built with a **KML-first, Liquid Galaxy-friendly** architecture.
 
@@ -6,14 +6,14 @@ Data sourced from **Glottolog** (linguistic classification) and **UNESCO Atlas o
 
 ---
 
-## ✨ Features
+## Features
 
-### 📊 Home Screen
+### Home Screen
 - **Searchable language list** with debounced input (300ms)
 - **Endangerment filter chips** — color-coded with live counts
 - **Expandable language tiles** showing name, family, region, status, coordinates, and description
 
-### 🗺️ Interactive Map
+###  Interactive Map
 - **8,300+ language markers** displayed as name labels on the map
 - **Marker clustering** — groups nearby languages at lower zoom levels
 - **Endangerment-colored markers** — green (safe) → red (nearly extinct) → grey (extinct)
@@ -22,14 +22,14 @@ Data sourced from **Glottolog** (linguistic classification) and **UNESCO Atlas o
 - **Filter by endangerment** — show only threatened, moribund, or extinct languages
 - **Dark/light map tiles** — CartoDB Dark Matter & Positron, auto-switching with app theme
 
-### ⚙️ Settings
+###  Settings
 - Dark/light theme toggle
 - Data source attributions (Glottolog, UNESCO)
 - App version display
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 **MVVM** with **Provider** state management and **GoRouter** navigation.
 
@@ -83,7 +83,7 @@ The ViewModel layer works with **raw `Language` objects and `LatLng` coordinates
 
 ---
 
-## 📦 Data Pipeline
+##  Data Pipeline
 
 A standalone Python script (`data_ingestion/ingest.py`) merges two data sources:
 
@@ -113,7 +113,7 @@ A standalone Python script (`data_ingestion/ingest.py`) merges two data sources:
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Flutter SDK `>=3.10.8`
@@ -146,7 +146,7 @@ python ingest.py
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Component | Technology |
 |---|---|
@@ -161,7 +161,7 @@ python ingest.py
 
 ---
 
-## 📸 Screens
+##  Screens
 
 | Splash | Home | Map | Settings |
 |---|---|---|---|
@@ -169,7 +169,7 @@ python ingest.py
 
 ---
 
-## 📄 Data Sources & Attribution
+##  Data Sources & Attribution
 
 - **Glottolog** — Hammarström, Harald & Forkel, Robert & Haspelmath, Martin & Bank, Sebastian. *Glottolog 5.0*. Leipzig: Max Planck Institute for Evolutionary Anthropology. https://glottolog.org
 - **UNESCO Atlas of the World's Languages in Danger** — Moseley, Christopher (ed.). 2010. *Atlas of the World's Languages in Danger*, 3rd edn. Paris, UNESCO Publishing.
@@ -177,13 +177,13 @@ python ingest.py
 
 ---
 
-## 📋 License
+##  License
 
 This project is for educational and research purposes.
 
 ---
 
-## 🗺️ Roadmap
+##  Roadmap
 
 - [ ] Language Family View (color-coded by family)
 - [ ] Endangered Languages Focus View
