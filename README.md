@@ -27,6 +27,13 @@ Data sourced from **Glottolog** (linguistic classification) and **UNESCO Atlas o
 - Data source attributions (Glottolog, UNESCO)
 - App version display
 
+### 💾 KML Export (Liquid Galaxy-Ready)
+- **Comprehensive KML Generation:** Converts search results or filtered views of languages into a standard `.kml` file.
+- **Cross-Platform Save:** Uses platform-aware saving (downloads automatically on Web, writes directly on Mobile/Desktop).
+- **Liquid Galaxy Styling:** Translates app endangerment color hexes into KML `aabbggrr` values.
+- **LookAt Camera Angles:** Embeds precise `<LookAt>` details for every marker to support synchronized viewpoints on multi-display setups.
+- **Visual Folders:** Organizes markers into distinct KML `<Folder>` structures based on endangerment levels for easy visibility control.
+
 ---
 
 ##  Architecture
@@ -51,7 +58,8 @@ lib/
 │   ├── repositories/
 │   │   └── language_repository.dart  # Single source of truth
 │   └── services/
-│       └── local_data_service.dart   # JSON asset loader
+│       ├── local_data_service.dart   # JSON asset loader
+│       └── kml_service.dart          # KML generation (LookAt & Styles)
 └── features/
     ├── splash/                   # Animated splash + data loading
     ├── home/                     # Search, filter, expandable list
@@ -67,6 +75,7 @@ lib/
     │       └── utils/
     │           ├── map_tile_config.dart
     │           └── marker_builder.dart
+    ├── kml_export/               # KML export presentation layer (Screen, ViewModel)
     └── settings/                 # Theme toggle, attributions
 ```
 
@@ -76,7 +85,7 @@ The ViewModel layer works with **raw `Language` objects and `LatLng` coordinates
 
 | Future Feature | Extension Point |
 |---|---|
-| **KML Generation** | Iterate `filteredLanguages` → generate `<Placemark>` elements |
+| **KML Generation** | Iterate `filteredLanguages` → generate `<Placemark>` elements (Completed ✅) |
 | **Liquid Galaxy** | Send `cameraPosition` as KML `<LookAt>` via SSH |
 | **Guided Tours** | Sequence `selectLanguage()` + animated camera moves |
 | **Heatmaps** | Use `filteredLanguages` coords with heatmap overlay |
@@ -156,6 +165,8 @@ python ingest.py
 | **Map** | flutter_map (OpenStreetMap) |
 | **Clustering** | flutter_map_marker_cluster |
 | **Tiles** | CartoDB (Dark Matter / Positron) |
+| **XML Builder** | xml |
+| **File Saving** | file_saver |
 | **Typography** | Google Fonts (Inter) |
 | **Data Ingestion** | Python (pandas, rapidfuzz) |
 
@@ -187,7 +198,7 @@ This project is for educational and research purposes.
 
 - [ ] Language Family View (color-coded by family)
 - [ ] Endangered Languages Focus View
-- [ ] KML Generation & Export
+- [x] KML Generation & Export
 - [ ] Liquid Galaxy Integration
 - [ ] Guided Tours
 - [ ] Heatmap Visualization
