@@ -193,33 +193,9 @@ class LanguageDetailSheet extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () async {
-                        try {
-                          if (onFlyTo != null) {
-                            onFlyTo!();
-                          }
-                          await FlyToService.saveFlyToKml(
-                            name: language.name,
-                            latitude: language.latitude,
-                            longitude: language.longitude,
-                          );
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Saved FlyTo KML for ${language.name}'),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to save FlyTo KML: $e'),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          }
+                      onPressed: () {
+                        if (onFlyTo != null) {
+                          onFlyTo!();
                         }
                       },
                       icon: const Icon(Icons.flight_takeoff_rounded),

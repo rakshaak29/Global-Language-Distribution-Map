@@ -190,36 +190,11 @@ class LanguageListTile extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         OutlinedButton.icon(
-                          onPressed: () async {
-                            try {
-                              // Select the language in MapViewModel
-                              context.read<MapViewModel>().selectLanguage(language);
-                              // Go to Map screen
-                              context.go(RoutePaths.map);
-
-                              await FlyToService.saveFlyToKml(
-                                name: language.name,
-                                latitude: language.latitude,
-                                longitude: language.longitude,
-                              );
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Saved FlyTo KML for ${language.name}'),
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Failed to save FlyTo KML: $e'),
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              }
-                            }
+                          onPressed: () {
+                            // Select the language in MapViewModel
+                            context.read<MapViewModel>().selectLanguage(language);
+                            // Go to Map screen
+                            context.go(RoutePaths.map);
                           },
                           icon: const Icon(Icons.flight_takeoff_rounded, size: 16),
                           label: Text(
