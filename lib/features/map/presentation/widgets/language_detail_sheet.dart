@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:global_language_distribution_map/app/theme.dart';
 import 'package:global_language_distribution_map/data/models/language.dart';
-import 'package:global_language_distribution_map/data/services/fly_to_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// A bottom sheet that displays detailed information about a selected language.
