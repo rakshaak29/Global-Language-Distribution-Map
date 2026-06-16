@@ -37,7 +37,7 @@ class MapViewModel extends ChangeNotifier {
   bool _isLoading = true;
   String? _errorMessage;
   LatLng _cameraCenter = const LatLng(20.0, 0.0);
-  double _zoomLevel = 2.5;
+  double _zoomLevel = 1.7;
   String _endangermentFilter = 'all';
   String _familyFilter = 'all';
   String? _currentFlyToKml;

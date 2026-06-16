@@ -186,10 +186,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             options: MapOptions(
               initialCenter: viewModel.cameraCenter,
               initialZoom: viewModel.zoomLevel,
-              minZoom: 2.5,
+              minZoom: 1.3,
               maxZoom: 18,
-              // Constrain camera to single world view — no wrapping
-              cameraConstraint: CameraConstraint.contain(
+              // Constrain camera center to single world view — allows zooming out to see the whole world without cutting off languages at the edge
+              cameraConstraint: CameraConstraint.containCenter(
                 bounds: LatLngBounds(
                   const LatLng(-85, -180),
                   const LatLng(85, 180),
