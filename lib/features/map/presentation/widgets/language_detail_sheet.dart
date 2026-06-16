@@ -50,17 +50,6 @@ class _LanguageDetailSheetState extends State<LanguageDetailSheet>
       CurvedAnimation(parent: _animController, curve: Curves.easeOut),
     );
     _animController.forward();
-
-    // Auto-speak when card appears
-    _speakLanguageInfo();
-  }
-
-  @override
-  void didUpdateWidget(LanguageDetailSheet oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.language.id != widget.language.id) {
-      _speakLanguageInfo();
-    }
   }
 
   Future<void> _speakLanguageInfo() async {
@@ -73,15 +62,20 @@ class _LanguageDetailSheetState extends State<LanguageDetailSheet>
       longitude: widget.language.longitude,
     );
 
-    setState(() => _isSpeaking = true);
-    await _tts.speak(text);
+    try {
+      setState(() => _isSpeaking = true);
+      await _tts.speak(text);
 
-    // Poll briefly for completion since TTS callbacks may be async
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() => _isSpeaking = _tts.isSpeaking);
-      }
-    });
+      // Poll briefly for completion since TTS callbacks may be async
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          setState(() => _isSpeaking = _tts.isSpeaking);
+        }
+      });
+    } catch (_) {
+      // Browser may block speech if no prior user gesture
+      if (mounted) setState(() => _isSpeaking = false);
+    }
   }
 
   Future<void> _toggleSpeech() async {

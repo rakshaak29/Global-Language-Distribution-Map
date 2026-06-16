@@ -91,16 +91,25 @@ class TtsService {
 
   /// Speak the provided text. Stops any current speech first.
   Future<void> speak(String text) async {
-    await initialize();
-    await stop();
-    _isSpeaking = true;
-    await _flutterTts.speak(text);
+    try {
+      await initialize();
+      await stop();
+      _isSpeaking = true;
+      await _flutterTts.speak(text);
+    } catch (_) {
+      // SpeechSynthesis may fail on web if browser blocks it
+      _isSpeaking = false;
+    }
   }
 
   /// Stop current speech.
   Future<void> stop() async {
     _isSpeaking = false;
-    await _flutterTts.stop();
+    try {
+      await _flutterTts.stop();
+    } catch (_) {
+      // Ignore stop errors
+    }
   }
 
   /// Generate a natural-sounding description for a language.
