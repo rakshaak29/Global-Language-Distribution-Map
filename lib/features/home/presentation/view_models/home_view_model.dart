@@ -4,9 +4,7 @@ import 'package:global_language_distribution_map/data/models/language.dart';
 import 'package:global_language_distribution_map/data/repositories/language_repository.dart';
 import 'package:global_language_distribution_map/data/services/fly_to_service.dart';
 
-/// ViewModel for the Home screen.
-///
-/// Manages search, filtering, and the displayed language list.
+/// ViewModel for the Home screen (dashboard).
 class HomeViewModel extends ChangeNotifier {
   final LanguageRepository _repository;
   final Debouncer _debouncer = Debouncer(milliseconds: 300);
@@ -35,6 +33,20 @@ class HomeViewModel extends ChangeNotifier {
   int get totalCount => _repository.totalCount;
   int get filteredCount => _filteredLanguages.length;
 
+  /// Total unique language families.
+  int get totalFamilies => _repository.getLanguageFamilies().length;
+
+  /// Count of all endangered languages (any non-safe status).
+  int get endangeredCount {
+    return _repository
+        .getAllLanguages()
+        .where((l) => l.isEndangered)
+        .length;
+  }
+
+  /// Count of languages shown on the map (with coordinates).
+  int get mappableCount => _repository.languagesWithCoordinates;
+
   List<String> get endangermentStatuses =>
       ['all', ..._repository.getEndangermentStatuses()];
 
@@ -43,7 +55,6 @@ class HomeViewModel extends ChangeNotifier {
 
   // ─── Actions ─────────────────────────────────────────────────────────────
 
-  /// Update the search query with debouncing.
   void onSearchChanged(String query) {
     _searchQuery = query;
     _isSearching = query.isNotEmpty;
@@ -54,13 +65,11 @@ class HomeViewModel extends ChangeNotifier {
     });
   }
 
-  /// Set the endangerment filter.
   void setEndangermentFilter(String status) {
     _selectedEndangerment = status;
     _applyFilters();
   }
 
-  /// Clear all filters and search.
   void clearFilters() {
     _searchQuery = '';
     _selectedEndangerment = 'all';
@@ -69,7 +78,6 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Select a language to view details.
   void selectLanguage(Language? language) {
     _selectedLanguage = language;
     if (language != null) {
@@ -84,7 +92,6 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Apply current search and filter criteria.
   void _applyFilters() {
     _filteredLanguages = _repository.searchAndFilter(
       query: _searchQuery,
