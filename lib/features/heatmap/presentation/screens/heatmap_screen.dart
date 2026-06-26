@@ -68,7 +68,7 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
             if (_showHeatmap) ...[
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
-                height: 250,
+                height: 450,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: colorScheme.outlineVariant),
@@ -78,10 +78,18 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                   child: Stack(
                     children: [
                       FlutterMap(
-                        options: const MapOptions(
-                          initialCenter: LatLng(10, 40),
-                          initialZoom: 0.5,
-                          interactionOptions: InteractionOptions(
+                        options: MapOptions(
+                          initialCenter: const LatLng(10, 10),
+                          initialZoom: 1.6,
+                          minZoom: 1.3,
+                          maxZoom: 8,
+                          cameraConstraint: CameraConstraint.containCenter(
+                            bounds: LatLngBounds(
+                              const LatLng(-85, -180),
+                              const LatLng(85, 180),
+                            ),
+                          ),
+                          interactionOptions: const InteractionOptions(
                             flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                           ),
                         ),
