@@ -29,7 +29,7 @@ class _FamiliesScreenState extends State<FamiliesScreen> {
     final vm = context.watch<FamiliesViewModel>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F4),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           // ─── Header ─────────────────────────────────────────────
@@ -70,10 +70,10 @@ class _FamiliesScreenState extends State<FamiliesScreen> {
                               const SizedBox(height: 10),
                           itemBuilder: (context, index) {
                             final family = vm.filteredFamilies[index];
-                            final colors = _gradientForIndex(index);
+                            final color = _colorForIndex(index);
                             return _FamilyCard(
                               family: family,
-                              gradientColors: colors,
+                              accentColor: color,
                             );
                           },
                         ),
@@ -84,9 +84,9 @@ class _FamiliesScreenState extends State<FamiliesScreen> {
     );
   }
 
-  List<Color> _gradientForIndex(int index) {
+  Color _colorForIndex(int index) {
     final gradients = AppTheme.familyCardGradients;
-    return gradients[index % gradients.length];
+    return gradients[index % gradients.length][0];
   }
 }
 
@@ -150,28 +150,32 @@ class _SearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: TextField(
         controller: controller,
         onChanged: onChanged,
-        style: GoogleFonts.inter(fontSize: 14),
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
         decoration: InputDecoration(
           hintText: 'Search families...',
           hintStyle: GoogleFonts.inter(
             fontSize: 14,
-            color: const Color(0xFF9EAA9B),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          prefixIcon: const Icon(Icons.search_rounded,
-              color: Color(0xFF9EAA9B), size: 22),
+          prefixIcon: Icon(Icons.search_rounded,
+              color: Theme.of(context).colorScheme.onSurfaceVariant, size: 22),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
@@ -185,76 +189,102 @@ class _SearchBar extends StatelessWidget {
 
 class _FamilyCard extends StatelessWidget {
   final FamilyStat family;
-  final List<Color> gradientColors;
+  final Color accentColor;
 
-  const _FamilyCard({required this.family, required this.gradientColors});
+  const _FamilyCard({required this.family, required this.accentColor});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: gradientColors,
-        ),
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant, width: 1),
       ),
-      child: Row(
-        children: [
-          // Emoji icon
-          Text(
-            family.emoji,
-            style: const TextStyle(fontSize: 28),
-          ),
-          const SizedBox(width: 14),
-          // Name + count
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  family.name,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
+      color: Theme.of(context).cardTheme.color,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Colored left border strip
+            Container(width: 6, color: accentColor),
+            
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                child: Row(
+                  children: [
+                    // Emoji icon in a subtle accent circle
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        family.emoji,
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    // Name + count
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            family.name,
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${family.languageCount} languages',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Speaker count
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          family.speakerCount == 'Unknown' ? '—' : family.speakerCount,
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        Text(
+                          'speakers',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '${family.languageCount} languages',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.8),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-          // Speaker count
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                family.speakerCount == 'Unknown' ? '—' : family.speakerCount,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                'speakers',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: Colors.white.withValues(alpha: 0.75),
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
