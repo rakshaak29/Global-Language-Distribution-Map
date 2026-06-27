@@ -3,6 +3,7 @@ import 'package:global_language_distribution_map/app/router.dart';
 import 'package:global_language_distribution_map/app/theme.dart';
 import 'package:global_language_distribution_map/core/widgets/curved_header.dart';
 import 'package:global_language_distribution_map/features/settings/presentation/view_models/settings_view_model.dart';
+import 'package:global_language_distribution_map/data/services/liquid_galaxy_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -19,21 +20,27 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  late final TextEditingController _ipController;
+  late final TextEditingController _hostController;
   late final TextEditingController _portController;
+  late final TextEditingController _usernameController;
+  late final TextEditingController _passwordController;
 
   @override
   void initState() {
     super.initState();
     final viewModel = context.read<SettingsViewModel>();
-    _ipController = TextEditingController(text: viewModel.ipAddress);
+    _hostController = TextEditingController(text: viewModel.host);
     _portController = TextEditingController(text: viewModel.port);
+    _usernameController = TextEditingController(text: viewModel.username);
+    _passwordController = TextEditingController(text: viewModel.password);
   }
 
   @override
   void dispose() {
-    _ipController.dispose();
+    _hostController.dispose();
     _portController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -130,11 +137,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                           // IP Address Field
                           TextField(
-                            controller: _ipController,
-                            onChanged: viewModel.setIpAddress,
+                            controller: _hostController,
+                            onChanged: viewModel.setHost,
                             style: GoogleFonts.inter(fontSize: 14),
                             decoration: InputDecoration(
-                              labelText: 'IP Address',
+                              labelText: 'IP/Host Address',
                               labelStyle: GoogleFonts.inter(fontSize: 13),
                               hintText: 'e.g. 192.168.1.100',
                               border: OutlineInputBorder(
@@ -143,7 +150,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               prefixIcon: const Icon(Icons.computer_rounded, size: 20),
                               isDense: true,
                             ),
-                            keyboardType: TextInputType.values[0], // text input type fallback
                           ),
                           const SizedBox(height: 12),
 
@@ -153,9 +159,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             onChanged: viewModel.setPort,
                             style: GoogleFonts.inter(fontSize: 14),
                             decoration: InputDecoration(
-                              labelText: 'Port',
+                              labelText: 'SSH Port',
                               labelStyle: GoogleFonts.inter(fontSize: 13),
-                              hintText: 'e.g. 2222',
+                              hintText: 'e.g. 22',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -163,6 +169,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               isDense: true,
                             ),
                             keyboardType: TextInputType.number,
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Username Field
+                          TextField(
+                            controller: _usernameController,
+                            onChanged: viewModel.setUsername,
+                            style: GoogleFonts.inter(fontSize: 14),
+                            decoration: InputDecoration(
+                              labelText: 'SSH Username',
+                              labelStyle: GoogleFonts.inter(fontSize: 13),
+                              hintText: 'e.g. lg',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              prefixIcon: const Icon(Icons.person_rounded, size: 20),
+                              isDense: true,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Password Field
+                          TextField(
+                            controller: _passwordController,
+                            onChanged: viewModel.setPassword,
+                            obscureText: true,
+                            style: GoogleFonts.inter(fontSize: 14),
+                            decoration: InputDecoration(
+                              labelText: 'SSH Password',
+                              labelStyle: GoogleFonts.inter(fontSize: 13),
+                              hintText: 'Required',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              prefixIcon: const Icon(Icons.lock_rounded, size: 20),
+                              isDense: true,
+                            ),
                           ),
                           const SizedBox(height: 16),
 
@@ -205,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                           )
                                         : const Icon(Icons.network_check_rounded, size: 18),
                                     label: Text(
-                                      viewModel.isConnecting ? 'Connecting...' : 'Test Connection',
+                                      viewModel.isConnecting ? 'Connecting...' : 'Connect to LG',
                                       style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                                     ),
                                     style: ElevatedButton.styleFrom(
@@ -238,6 +281,158 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  // ─── Liquid Galaxy Actions ───────────────────────────
+                  if (viewModel.isConnected) ...[
+                    _buildSectionTitle(context, 'Liquid Galaxy Actions'),
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: colorScheme.outlineVariant),
+                      ),
+                      color: colorScheme.surfaceContainerLow,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () async {
+                                      final success = await viewModel.clearKml();
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              success
+                                                  ? 'KML cleared on Liquid Galaxy'
+                                                  : 'Failed to clear KML',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    icon: const Icon(Icons.clear_all_rounded, size: 18),
+                                    label: Text(
+                                      'Clear KML',
+                                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      // Get a list of map languages to send as demo KML
+                                      // Wait, we can get them from context or send a simple message
+                                      final success = await viewModel.sendKml('');
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              success
+                                                  ? 'KML sent to Liquid Galaxy'
+                                                  : 'Failed to send KML',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    icon: const Icon(Icons.send_rounded, size: 18),
+                                    label: Text(
+                                      'Send Demo KML',
+                                      style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.white),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.primaryGreen,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () async {
+                                      final success = await viewModel.relaunchGoogleEarth();
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              success
+                                                  ? 'Relaunching Google Earth...'
+                                                  : 'Failed to relaunch Google Earth',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    icon: const Icon(Icons.restart_alt_rounded, size: 18),
+                                    label: Text(
+                                      'Relaunch GE',
+                                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () async {
+                                      final confirm = await showDialog<bool>(
+                                        context: context,
+                                        builder: (ctx) => AlertDialog(
+                                          title: const Text('Reboot Liquid Galaxy?'),
+                                          content: const Text('Are you sure you want to reboot all LG screens?'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(ctx, false),
+                                              child: const Text('Cancel'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(ctx, true),
+                                              child: const Text('Reboot', style: TextStyle(color: Colors.red)),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirm == true) {
+                                        final success = await viewModel.reboot();
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                success
+                                                    ? 'Rebooting Liquid Galaxy...'
+                                                    : 'Failed to send reboot command',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    icon: const Icon(Icons.power_settings_new_rounded, size: 18),
+                                    label: Text(
+                                      'Reboot LG',
+                                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.red,
+                                      side: const BorderSide(color: Colors.red),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
 
                   // ─── Display Settings ────────────────────────────────
                   _buildSectionTitle(context, 'Display Settings'),

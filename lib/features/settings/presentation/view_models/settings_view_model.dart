@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-
-/// Connection status for Liquid Galaxy.
-enum LgConnectionStatus { disconnected, connecting, connected, error }
+import 'package:global_language_distribution_map/data/services/liquid_galaxy_service.dart';
 
 /// ViewModel for the Settings screen.
 ///
@@ -12,10 +10,13 @@ class SettingsViewModel extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
 
   // Liquid Galaxy connection
-  String _ipAddress = '192.168.1.100';
-  String _port = '2222';
-  LgConnectionStatus _connectionStatus = LgConnectionStatus.disconnected;
-  String? _connectionError;
+  String _host = '192.168.1.100';
+  String _port = '22';
+  String _username = 'lg';
+  String _password = '';
+  int _numberOfScreens = 3;
+
+  final LiquidGalaxyService _lgService = LiquidGalaxyService();
 
   // Display settings
   bool _darkMapTheme = false;
@@ -28,30 +29,25 @@ class SettingsViewModel extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   bool get isDarkMode => _themeMode == ThemeMode.dark;
 
-  String get ipAddress => _ipAddress;
+  String get host => _host;
   String get port => _port;
-  LgConnectionStatus get connectionStatus => _connectionStatus;
-  bool get isConnected => _connectionStatus == LgConnectionStatus.connected;
-  bool get isConnecting => _connectionStatus == LgConnectionStatus.connecting;
-  String? get connectionError => _connectionError;
+  String get username => _username;
+  String get password => _password;
+  int get numberOfScreens => _numberOfScreens;
+
+  LgConnectionStatus get connectionStatus => _lgService.status;
+  bool get isConnected => _lgService.isConnected;
+  bool get isConnecting => _lgService.isConnecting;
+  String? get connectionError => _lgService.lastError;
 
   bool get darkMapTheme => _darkMapTheme;
   bool get showLanguageMarkers => _showLanguageMarkers;
   bool get autoFlyOnSelect => _autoFlyOnSelect;
   double get markerSize => _markerSize;
 
-  String get connectionStatusText {
-    switch (_connectionStatus) {
-      case LgConnectionStatus.connected:
-        return 'Connected!';
-      case LgConnectionStatus.connecting:
-        return 'Connecting...';
-      case LgConnectionStatus.error:
-        return 'Connection Failed';
-      case LgConnectionStatus.disconnected:
-        return 'Disconnected';
-    }
-  }
+  LiquidGalaxyService get lgService => _lgService;
+
+  String get connectionStatusText => _lgService.statusText;
 
   // ─── Theme ──────────────────────────────────────────────────────────────────
 
@@ -70,8 +66,8 @@ class SettingsViewModel extends ChangeNotifier {
 
   // ─── Liquid Galaxy Connection ────────────────────────────────────────────────
 
-  void setIpAddress(String value) {
-    _ipAddress = value;
+  void setHost(String value) {
+    _host = value;
     notifyListeners();
   }
 
@@ -80,37 +76,86 @@ class SettingsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Test connection to Liquid Galaxy (stub — actual SSH not implemented).
+  void setUsername(String value) {
+    _username = value;
+    notifyListeners();
+  }
+
+  void setPassword(String value) {
+    _password = value;
+    notifyListeners();
+  }
+
+  void setNumberOfScreens(int value) {
+    _numberOfScreens = value;
+    notifyListeners();
+  }
+
+  /// Connect to Liquid Galaxy using real LiquidGalaxyService.
   Future<void> testConnection() async {
-    if (_isConnecting) return;
-    _connectionStatus = LgConnectionStatus.connecting;
-    _connectionError = null;
+    if (isConnecting) return;
     notifyListeners();
 
-    // Simulate network attempt
-    await Future.delayed(const Duration(seconds: 2));
+    final config = LgConnectionConfig(
+      host: _host.trim(),
+      port: int.tryParse(_port) ?? 22,
+      username: _username.trim(),
+      password: _password,
+      numberOfScreens: _numberOfScreens,
+    );
 
-    // For demo purposes: succeed if IP looks valid
-    final isValidIp = RegExp(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
-        .hasMatch(_ipAddress.trim());
-
-    if (isValidIp && _port.isNotEmpty) {
-      _connectionStatus = LgConnectionStatus.connected;
-    } else {
-      _connectionStatus = LgConnectionStatus.error;
-      _connectionError = 'Could not connect to $_ipAddress:$_port';
-    }
+    await _lgService.connect(config);
     notifyListeners();
   }
 
-  void disconnect() {
-    _connectionStatus = LgConnectionStatus.disconnected;
-    _connectionError = null;
+  /// Disconnect from Liquid Galaxy.
+  Future<void> disconnect() async {
+    await _lgService.disconnect();
     notifyListeners();
   }
 
-  bool get _isConnecting =>
-      _connectionStatus == LgConnectionStatus.connecting;
+  /// Send pre-generated KML to the Liquid Galaxy.
+  Future<bool> sendKml(String kmlContent) async {
+    final result = await _lgService.sendKml(kmlContent);
+    notifyListeners();
+    return result;
+  }
+
+  /// Clear KML on the Liquid Galaxy.
+  Future<bool> clearKml() async {
+    final result = await _lgService.clearKml();
+    notifyListeners();
+    return result;
+  }
+
+  /// Fly to coordinates on Liquid Galaxy.
+  Future<bool> flyToOnLg({
+    required double latitude,
+    required double longitude,
+    String name = 'Location',
+  }) async {
+    final result = await _lgService.flyTo(
+      latitude: latitude,
+      longitude: longitude,
+      name: name,
+    );
+    notifyListeners();
+    return result;
+  }
+
+  /// Reboot the Liquid Galaxy rig.
+  Future<bool> reboot() async {
+    final result = await _lgService.reboot();
+    notifyListeners();
+    return result;
+  }
+
+  /// Relaunch Google Earth on the Liquid Galaxy.
+  Future<bool> relaunchGoogleEarth() async {
+    final result = await _lgService.relaunchGoogleEarth();
+    notifyListeners();
+    return result;
+  }
 
   // ─── Display Settings ────────────────────────────────────────────────────────
 
