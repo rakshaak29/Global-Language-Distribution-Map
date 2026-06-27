@@ -7,6 +7,7 @@ import 'package:global_language_distribution_map/app/theme.dart';
 import 'package:global_language_distribution_map/core/constants/app_constants.dart';
 import 'package:global_language_distribution_map/data/models/language.dart';
 import 'package:global_language_distribution_map/features/map/presentation/view_models/map_view_model.dart';
+import 'package:global_language_distribution_map/data/services/tts_service.dart';
 
 /// Full-screen Language Detail page.
 ///
@@ -37,6 +38,21 @@ class LanguageDetailScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.volume_up_rounded),
+            onPressed: () {
+              final desc = TtsService.buildLanguageDescription(
+                name: language.name,
+                family: language.languageFamily,
+                endangeredStatus: language.endangeredStatus,
+                countryRegion: language.countryRegion,
+                latitude: language.latitude,
+                longitude: language.longitude,
+              );
+              TtsService().speak(desc);
+            },
+            tooltip: 'Listen',
+          ),
+          IconButton(
             icon: const Icon(Icons.share_outlined),
             onPressed: () {},
             tooltip: 'Share',
@@ -51,7 +67,7 @@ class LanguageDetailScreen extends StatelessWidget {
             Container(
               width: double.infinity,
               color: AppTheme.primaryGreenDark,
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -85,15 +101,9 @@ class LanguageDetailScreen extends StatelessWidget {
               ),
             ),
 
-            // ─── Rounded White Body ────────────────────────────────
+            // ─── Body ────────────────────────────────
             Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              transform:
-                  Matrix4.translationValues(0, -20, 0),
+              color: colorScheme.surface,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -134,7 +144,7 @@ class LanguageDetailScreen extends StatelessWidget {
                                   'UNESCO Status',
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: const Color(0xFF52634F),
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 Text(
@@ -207,7 +217,7 @@ class LanguageDetailScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF4F6F4),
+                        color: colorScheme.surfaceContainerHigh,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Column(
@@ -252,7 +262,7 @@ class LanguageDetailScreen extends StatelessWidget {
                       language.description,
                       style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: const Color(0xFF52634F),
+                        color: colorScheme.onSurfaceVariant,
                         height: 1.6,
                       ),
                     ),
@@ -284,9 +294,6 @@ class LanguageDetailScreen extends StatelessWidget {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              side: const BorderSide(
-                                  color: Color(0xFFCED9CD)),
-                              foregroundColor: AppTheme.primaryGreenDark,
                             ),
                           ),
                         ),
@@ -309,8 +316,6 @@ class LanguageDetailScreen extends StatelessWidget {
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryGreen,
-                              foregroundColor: Colors.white,
                               padding:
                                   const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
@@ -371,6 +376,7 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -391,7 +397,7 @@ class _InfoCard extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A2118),
+                  color: colorScheme.onSurface,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -400,7 +406,7 @@ class _InfoCard extends StatelessWidget {
                 label,
                 style: GoogleFonts.inter(
                   fontSize: 11,
-                  color: const Color(0xFF52634F),
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -418,6 +424,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
       child: Text(
@@ -425,7 +432,7 @@ class _SectionHeader extends StatelessWidget {
         style: GoogleFonts.inter(
           fontSize: 16,
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF1A2118),
+          color: colorScheme.onSurface,
         ),
       ),
     );
@@ -440,6 +447,7 @@ class _ClassificationRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
@@ -450,7 +458,7 @@ class _ClassificationRow extends StatelessWidget {
               label,
               style: GoogleFonts.inter(
                 fontSize: 13,
-                color: const Color(0xFF52634F),
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -460,7 +468,7 @@ class _ClassificationRow extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF1A2118),
+                color: colorScheme.onSurface,
               ),
             ),
           ),
@@ -477,19 +485,20 @@ class _CountryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F6F4),
+        color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFDDE4DC)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Text(
         code.trim(),
         style: GoogleFonts.inter(
           fontSize: 13,
           fontWeight: FontWeight.w500,
-          color: const Color(0xFF1A2118),
+          color: colorScheme.onSurface,
         ),
       ),
     );

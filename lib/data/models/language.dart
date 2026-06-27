@@ -55,6 +55,32 @@ class Language {
   /// Whether this language is endangered in any form.
   bool get isEndangered => endangeredStatus != 'not endangered';
 
+  /// Raw speaker count parsed from description, or estimated using deterministic ID hash.
+  double get speakerCount {
+    final desc = description.toLowerCase();
+    final match = RegExp(r'speakers:\s*([\d.]+)').firstMatch(desc);
+    if (match != null) {
+      return double.tryParse(match.group(1) ?? '0') ?? 0.0;
+    }
+    
+    // Deterministic imputation using the language ID's hash code
+    final int hash = id.hashCode.abs();
+    switch (endangeredStatus) {
+      case 'extinct':
+        return 0.0;
+      case 'nearly extinct':
+        return (10 + (hash % 90)).toDouble(); // 10 to 100
+      case 'moribund':
+        return (100 + (hash % 900)).toDouble(); // 100 to 1,000
+      case 'shifting':
+        return (1000 + (hash % 14000)).toDouble(); // 1,000 to 15,000
+      case 'threatened':
+        return (15000 + (hash % 85000)).toDouble(); // 15,000 to 100,000
+      default:
+        return (100000 + (hash % 900000)).toDouble(); // 100,000 to 1,000,000
+    }
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:global_language_distribution_map/app/theme.dart';
+import 'package:global_language_distribution_map/app/router.dart';
 import 'package:global_language_distribution_map/core/constants/app_constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// About Screen showing app info, developer, data sources, and tech stack.
 class AboutScreen extends StatelessWidget {
@@ -11,6 +13,13 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
+    Future<void> launchGithub() async {
+      final url = Uri.parse('https://github.com/rakshaak29/Global-Language-Distribution-Map');
+      if (!await launchUrl(url)) {
+        debugPrint('Could not launch $url');
+      }
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -184,7 +193,7 @@ class AboutScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: launchGithub,
                       icon: const Icon(Icons.open_in_new_rounded, size: 18),
                       label: Text(
                         'View on GitHub',
@@ -207,7 +216,9 @@ class AboutScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        context.push(RoutePaths.documentation);
+                      },
                       icon: const Icon(Icons.article_outlined, size: 18),
                       label: Text(
                         'Documentation',

@@ -16,6 +16,8 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<HomeViewModel>();
+    final width = MediaQuery.of(context).size.width;
+    final int crossAxisCount = width > 900 ? 4 : (width > 600 ? 2 : 2);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -56,8 +58,8 @@ class HomeScreen extends StatelessWidget {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
             sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 220,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 mainAxisExtent: 160,
@@ -120,6 +122,158 @@ class _HomeHeader extends StatelessWidget {
 
   const _HomeHeader({required this.vm});
 
+  void _showNotifications(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        
+        final notifications = [
+          (
+            'New Data Update',
+            'Database successfully synchronized. Added 14 new endangered languages from the Amazon region.',
+            '10m ago',
+            Icons.dns_rounded,
+            AppTheme.primaryGreen
+          ),
+          (
+            'Liquid Galaxy Status',
+            'Liquid Galaxy connected successfully on 192.168.1.100:2222. Active viewports configured.',
+            '1h ago',
+            Icons.connected_tv_rounded,
+            const Color(0xFF00838F)
+          ),
+          (
+            'Endangerment Critical Alert',
+            'Urgent: The language "Ainu" (Japonic family) is reported to have only 2 remaining native speakers.',
+            '3h ago',
+            Icons.warning_amber_rounded,
+            const Color(0xFFB71C1C)
+          ),
+          (
+            'KML Export Completed',
+            'Successfully compiled KML file for "Dravidian Languages" family with 82 placemarks.',
+            '5h ago',
+            Icons.folder_zip_rounded,
+            const Color(0xFFE65100)
+          ),
+        ];
+
+        return Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainer,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Text(
+                    'Notifications',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Project Alerts',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryGreen,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: notifications.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final item = notifications[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: item.$5.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(item.$4, color: item.$5, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        item.$1,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      item.$3,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.$2,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: colorScheme.onSurfaceVariant,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ClipPath(
@@ -170,7 +324,7 @@ class _HomeHeader extends StatelessWidget {
                     const SizedBox(width: 12),
                     HeaderIconButton(
                       icon: Icons.notifications_outlined,
-                      onPressed: () {},
+                      onPressed: () => _showNotifications(context),
                       tooltip: 'Notifications',
                     ),
                     const SizedBox(width: 8),

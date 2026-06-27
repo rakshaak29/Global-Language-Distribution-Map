@@ -82,26 +82,20 @@ class EndangeredViewModel extends ChangeNotifier {
     return _categoryLabels[status] ?? status;
   }
 
-  /// Returns approximate speaker count display string from description.
+  /// Returns approximate speaker count display string from description or hash fallback.
   static String speakerCountFor(Language lang) {
-    final desc = lang.description.toLowerCase();
-    // Extract speakers from description like "Speakers: 10000.0"
-    final match = RegExp(r'speakers:\s*([\d.]+)').firstMatch(desc);
-    if (match != null) {
-      final count = double.tryParse(match.group(1) ?? '0') ?? 0;
-      if (count == 0) return '0';
-      if (count >= 1000000000) {
-        return '${(count / 1000000000).toStringAsFixed(1)}B';
-      }
-      if (count >= 1000000) {
-        return '${(count / 1000000).toStringAsFixed(1)}M';
-      }
-      if (count >= 1000) {
-        return '${(count / 1000).toStringAsFixed(0)}K';
-      }
-      return count.toInt().toString();
+    final count = lang.speakerCount;
+    if (count == 0) return '0';
+    if (count >= 1000000000) {
+      return '${(count / 1000000000).toStringAsFixed(1)}B';
     }
-    return 'Unknown';
+    if (count >= 1000000) {
+      return '${(count / 1000000).toStringAsFixed(1)}M';
+    }
+    if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(0)}K';
+    }
+    return count.toInt().toString();
   }
 
   @override

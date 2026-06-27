@@ -12,6 +12,7 @@ import 'package:global_language_distribution_map/features/endangered/presentatio
 import 'package:global_language_distribution_map/features/heatmap/presentation/screens/heatmap_screen.dart';
 import 'package:global_language_distribution_map/features/language_detail/presentation/screens/language_detail_screen.dart';
 import 'package:global_language_distribution_map/features/about/presentation/screens/about_screen.dart';
+import 'package:global_language_distribution_map/features/about/presentation/screens/documentation_screen.dart';
 import 'package:global_language_distribution_map/features/kml_export/presentation/screens/kml_export_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -29,6 +30,7 @@ class RouteNames {
   static const String heatmap = 'heatmap';
   static const String languageDetail = 'language-detail';
   static const String about = 'about';
+  static const String documentation = 'documentation';
   static const String kmlExport = 'kml-export';
 }
 
@@ -46,6 +48,7 @@ class RoutePaths {
   static const String heatmap = '/heatmap';
   static const String languageDetail = '/language-detail';
   static const String about = '/about';
+  static const String documentation = '/documentation';
   static const String kmlExport = '/kml-export';
 }
 
@@ -241,6 +244,11 @@ GoRouter createRouter() {
         path: RoutePaths.about,
         name: RouteNames.about,
         builder: (context, state) => const AboutScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.documentation,
+        name: RouteNames.documentation,
+        builder: (context, state) => const DocumentationScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

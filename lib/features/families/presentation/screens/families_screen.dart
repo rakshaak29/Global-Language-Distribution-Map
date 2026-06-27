@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:global_language_distribution_map/app/router.dart';
 import 'package:global_language_distribution_map/app/theme.dart';
 import 'package:global_language_distribution_map/features/families/presentation/view_models/families_view_model.dart';
+import 'package:global_language_distribution_map/features/map/presentation/view_models/map_view_model.dart';
 
 /// Language Families Screen.
 ///
@@ -74,6 +77,7 @@ class _FamiliesScreenState extends State<FamiliesScreen> {
                             return _FamilyCard(
                               family: family,
                               accentColor: color,
+                              onTap: () => _showFamilyActions(context, family, vm),
                             );
                           },
                         ),
@@ -87,6 +91,142 @@ class _FamiliesScreenState extends State<FamiliesScreen> {
   Color _colorForIndex(int index) {
     final gradients = AppTheme.familyCardGradients;
     return gradients[index % gradients.length][0];
+  }
+
+  void _showFamilyActions(BuildContext context, FamilyStat family, FamiliesViewModel vm) {
+    final colorScheme = Theme.of(context).colorScheme;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colorScheme.surfaceContainer,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  family.name,
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  '${family.languageCount} languages · ${family.speakerCount} speakers',
+                  style: GoogleFonts.inter(fontSize: 13, color: colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: 16),
+                ListTile(
+                  leading: const Icon(Icons.map_rounded, color: AppTheme.primaryGreen),
+                  title: Text('View on Map', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                  subtitle: Text('Filter map to show only ${family.name} languages'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    final mapVm = context.read<MapViewModel>();
+                    mapVm.setFamilyFilter(family.name);
+                    // Fly to the first language with coordinates
+                    final langs = vm.getLanguagesForFamily(family.name);
+                    final withCoords = langs.where((l) => l.hasCoordinates).toList();
+                    if (withCoords.isNotEmpty) {
+                      mapVm.selectLanguage(withCoords.first);
+                    }
+                    context.go(RoutePaths.map);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.list_rounded, color: colorScheme.primary),
+                  title: Text('View Languages', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                  subtitle: Text('Browse all ${family.languageCount} languages'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showFamilyLanguages(context, family, vm);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFamilyLanguages(BuildContext context, FamilyStat family, FamiliesViewModel vm) {
+    final langs = vm.getLanguagesForFamily(family.name);
+    final colorScheme = Theme.of(context).colorScheme;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colorScheme.surfaceContainer,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          maxChildSize: 0.9,
+          minChildSize: 0.3,
+          expand: false,
+          builder: (_, scrollController) {
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${family.name} (${langs.length})',
+                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: langs.length,
+                    itemBuilder: (_, i) {
+                      final lang = langs[i];
+                      return ListTile(
+                        leading: Icon(
+                          Icons.language_rounded,
+                          color: AppTheme.getEndangermentColor(lang.endangeredStatus),
+                        ),
+                        title: Text(lang.name, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                        subtitle: Text(lang.countryRegion, style: GoogleFonts.inter(fontSize: 12)),
+                        trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          context.read<MapViewModel>().flyToLanguage(lang);
+                          context.go(RoutePaths.map);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }
 
@@ -190,12 +330,15 @@ class _SearchBar extends StatelessWidget {
 class _FamilyCard extends StatelessWidget {
   final FamilyStat family;
   final Color accentColor;
+  final VoidCallback? onTap;
 
-  const _FamilyCard({required this.family, required this.accentColor});
+  const _FamilyCard({required this.family, required this.accentColor, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
       clipBehavior: Clip.antiAlias,
       elevation: 0,
       margin: EdgeInsets.zero,
@@ -286,6 +429,7 @@ class _FamilyCard extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

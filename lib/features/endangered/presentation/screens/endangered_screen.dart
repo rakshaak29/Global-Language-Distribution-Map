@@ -42,13 +42,14 @@ class _EndangeredScreenState extends State<EndangeredScreen> {
   Widget build(BuildContext context) {
     final vm = context.watch<EndangeredViewModel>();
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appBarColor = theme.appBarTheme.backgroundColor ?? AppTheme.primaryGreenDark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F4),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Endangered Languages'),
-        backgroundColor: AppTheme.primaryGreenDark,
-        foregroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_rounded),
           onPressed: () => context.pop(),
@@ -58,7 +59,7 @@ class _EndangeredScreenState extends State<EndangeredScreen> {
         children: [
           // ─── Search ─────────────────────────────────────────────
           Container(
-            color: AppTheme.primaryGreenDark,
+            color: appBarColor,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Container(
               decoration: BoxDecoration(
@@ -96,7 +97,7 @@ class _EndangeredScreenState extends State<EndangeredScreen> {
 
           // ─── Filter Chips ────────────────────────────────────────
           Container(
-            color: AppTheme.primaryGreenDark,
+            color: appBarColor,
             padding: const EdgeInsets.only(bottom: 16),
             child: SizedBox(
               height: 36,
@@ -141,8 +142,8 @@ class _EndangeredScreenState extends State<EndangeredScreen> {
           // ─── Rounded top of white area ───────────────────────────
           Container(
             height: 16,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF4F6F4),
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
@@ -160,7 +161,7 @@ class _EndangeredScreenState extends State<EndangeredScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF52634F),
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -175,13 +176,13 @@ class _EndangeredScreenState extends State<EndangeredScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.search_off_rounded,
-                            size: 48, color: Colors.grey[400]),
+                            size: 48, color: colorScheme.onSurfaceVariant),
                         const SizedBox(height: 12),
                         Text(
                           'No languages found',
                           style: GoogleFonts.inter(
                             fontSize: 15,
-                            color: Colors.grey[500],
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -197,7 +198,7 @@ class _EndangeredScreenState extends State<EndangeredScreen> {
                       return _EndangeredTile(
                         language: lang,
                         onViewOnMap: () {
-                          context.read<MapViewModel>().selectLanguage(lang);
+                          context.read<MapViewModel>().flyToLanguage(lang);
                           context.pop();
                           context.go(RoutePaths.map);
                         },
@@ -224,22 +225,24 @@ class _EndangeredTile extends StatelessWidget {
     required this.onViewOnMap,
     required this.onDetail,
   });
-
   @override
   Widget build(BuildContext context) {
     final statusColor = AppTheme.getEndangermentColor(language.endangeredStatus);
     final label = EndangeredViewModel.labelFor(language.endangeredStatus);
     final speakers = EndangeredViewModel.speakerCountFor(language);
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap: onDetail,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: const Color(0xFFE0E8DF),
+            color: colorScheme.outlineVariant,
           ),
         ),
         child: Row(
@@ -270,7 +273,7 @@ class _EndangeredTile extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1A2118),
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -280,7 +283,7 @@ class _EndangeredTile extends StatelessWidget {
                         language.countryRegion,
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: const Color(0xFF52634F),
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       if (speakers != 'Unknown') ...[
@@ -288,8 +291,8 @@ class _EndangeredTile extends StatelessWidget {
                         Container(
                           width: 3,
                           height: 3,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF9EAA9B),
+                          decoration: BoxDecoration(
+                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -298,7 +301,7 @@ class _EndangeredTile extends StatelessWidget {
                           '$speakers speakers',
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: const Color(0xFF52634F),
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],

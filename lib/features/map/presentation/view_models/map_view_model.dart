@@ -164,11 +164,18 @@ class MapViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  int _selectionEventId = 0;
+  
+  /// A counter that increments every time a language is selected.
+  /// Useful for triggering animations even if the same language is selected again.
+  int get selectionEventId => _selectionEventId;
+
   // ─── Selection ──────────────────────────────────────────────────────────────
 
   /// Select a language (e.g., when a marker is tapped).
   /// Returns the LatLng for camera animation.
   LatLng? selectLanguage(Language language) {
+    _selectionEventId++;
     _selectedLanguage = language;
     _currentFlyToKml = FlyToService.generateFlyToKml(
       latitude: language.latitude,
@@ -179,8 +186,19 @@ class MapViewModel extends ChangeNotifier {
     return LatLng(language.latitude, language.longitude);
   }
 
+  /// Convenience entry point for external screens (Endangered, Families, Tours).
+  /// Clears existing filters, selects the language, and generates FlyTo KML.
+  /// Callers should navigate to the Map tab after calling this.
+  LatLng? flyToLanguage(Language language) {
+    _endangermentFilter = 'all';
+    _familyFilter = 'all';
+    _filteredLanguages = _languagesWithCoords;
+    return selectLanguage(language);
+  }
+
   /// Clear the selected language.
   void clearSelection() {
+    _selectionEventId++;
     _selectedLanguage = null;
     _currentFlyToKml = null;
     notifyListeners();

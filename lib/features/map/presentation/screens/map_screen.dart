@@ -35,7 +35,7 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   final MapController _mapController = MapController();
-  String? _lastAnimatedLanguageId;
+  int? _lastSelectionEventId;
   String _currentTileUrl = MapTileConfig.voyagerTileUrl;
 
   Color _stringToFlutterColor(String str) {
@@ -118,13 +118,13 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     final viewModel = context.watch<MapViewModel>();
 
     final selected = viewModel.selectedLanguage;
-    if (selected != null && selected.id != _lastAnimatedLanguageId) {
-      _lastAnimatedLanguageId = selected.id;
+    if (selected != null && viewModel.selectionEventId != _lastSelectionEventId) {
+      _lastSelectionEventId = viewModel.selectionEventId;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _animatedMove(LatLng(selected.latitude, selected.longitude), 12);
       });
     } else if (selected == null) {
-      _lastAnimatedLanguageId = null;
+      _lastSelectionEventId = null;
     }
 
     if (viewModel.isLoading) {
@@ -310,6 +310,11 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                   viewModel.toggleSearch();
                                 }
                                 viewModel.updateSearchQuery(val);
+                              },
+                              onSubmitted: (val) {
+                                if (viewModel.searchResults.isNotEmpty) {
+                                  _onSearchLanguageSelected(viewModel.searchResults.first);
+                                }
                               },
                               style: GoogleFonts.inter(
                                 fontSize: 15,

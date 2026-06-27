@@ -69,6 +69,20 @@ class FamiliesViewModel extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   int get totalFamilies => _allFamilies.length;
 
+  static String formatSpeakerCount(double count) {
+    if (count == 0) return '0';
+    if (count >= 1000000000) {
+      return '${(count / 1000000000).toStringAsFixed(1)} Billion';
+    }
+    if (count >= 1000000) {
+      return '${(count / 1000000).toStringAsFixed(1)} Million';
+    }
+    if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(0)}K';
+    }
+    return count.toInt().toString();
+  }
+
   void _loadFamilies() {
     final all = _repository.getAllLanguages();
     final familyCounts = <String, int>{};
@@ -82,11 +96,22 @@ class FamiliesViewModel extends ChangeNotifier {
       ..sort((a, b) => b.value.compareTo(a.value));
 
     _allFamilies = sortedEntries.map((entry) {
+      final familyName = entry.key;
+      final familyLangs = all.where((l) => l.languageFamily == familyName);
+      
+      String displaySpeakers;
+      if (_speakerCounts.containsKey(familyName)) {
+        displaySpeakers = _speakerCounts[familyName]!;
+      } else {
+        final totalSpeakers = familyLangs.fold<double>(0.0, (sum, lang) => sum + lang.speakerCount);
+        displaySpeakers = formatSpeakerCount(totalSpeakers);
+      }
+
       return FamilyStat(
-        name: entry.key,
+        name: familyName,
         languageCount: entry.value,
-        speakerCount: _speakerCounts[entry.key] ?? 'Unknown',
-        emoji: _familyEmojis[entry.key] ?? '🗣',
+        speakerCount: displaySpeakers,
+        emoji: _familyEmojis[familyName] ?? '🗣',
       );
     }).toList();
 
