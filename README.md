@@ -36,48 +36,50 @@ Data sourced from **Glottolog** (linguistic classification) and **UNESCO Atlas o
 
 ---
 
-##  Architecture
+## 🏗️ Architecture & Folder Structure
 
-**MVVM** with **Provider** state management and **GoRouter** navigation.
+The project follows a clean **MVVM (Model-View-ViewModel)** architecture structured under a **Layer-First** layout. Dependencies are managed using a central Service Locator via **GetIt** to enforce loose coupling and facilitate testing.
 
+### Folder Structure
 ```
 lib/
-├── main.dart                     # Entry point + MultiProvider setup
+├── main.dart                      # App entry point, locator initialization & root providers
 ├── app/
-│   ├── app.dart                  # MaterialApp.router root widget
-│   ├── router.dart               # GoRouter with StatefulShellRoute
-│   └── theme.dart                # Dark/light themes + endangerment colors
+│   ├── app.dart                   # MaterialApp.router root configuration
+│   ├── router.dart                # Declarative navigation with GoRouter StatefulShellRoute
+│   └── theme.dart                 # Dark/light theme definitions & status color palettes
 ├── core/
+│   ├── di/
+│   │   └── locator.dart           # GetIt service locator setup
 │   ├── constants/
-│   │   └── app_constants.dart    # Endangerment labels, app metadata
-│   └── utils/
-│       └── debouncer.dart        # Debounce utility
+│   │   └── app_constants.dart     # System-wide constants & map configuration keys
+│   └── widgets/
+│       └── curved_header.dart     # Shared design system components
 ├── data/
 │   ├── models/
-│   │   └── language.dart         # Language data model
+│   │   └── language.dart          # Domain entity modeling language properties
 │   ├── repositories/
-│   │   └── language_repository.dart  # Single source of truth
+│   │   └── language_repository.dart # Repository acting as the single source of truth
 │   └── services/
-│       ├── local_data_service.dart   # JSON asset loader
-│       └── kml_service.dart          # KML generation (LookAt & Styles)
-└── features/
-    ├── splash/                   # Animated splash + data loading
-    ├── home/                     # Search, filter, expandable list
-    ├── map/                      # Interactive map with clustering
-    │   └── presentation/
-    │       ├── screens/
-    │       │   └── map_screen.dart
-    │       ├── view_models/
-    │       │   └── map_view_model.dart
-    │       ├── widgets/
-    │       │   ├── language_detail_sheet.dart
-    │       │   └── map_search_bar.dart
-    │       └── utils/
-    │           ├── map_tile_config.dart
-    │           └── marker_builder.dart
-    ├── kml_export/               # KML export presentation layer (Screen, ViewModel)
-    └── settings/                 # Theme toggle, attributions
+│       ├── local_data_service.dart # JSON asset ingestion service
+│       ├── liquid_galaxy_service.dart # SSH integration service for the LG Rig
+│       ├── gemini_service.dart    # LLM queries to Gemini Pro
+│       ├── tts_service.dart       # Local Text-To-Speech engine
+│       └── kml_service.dart       # Static utility mapping data structures to KML
+└── presentation/                  # Presentation layer organized by features
+    ├── home/                      # Dashboard showing stats, quick-nav, and alerts
+    ├── map/                       # Full map screens, marker clusterers, and detail sheets
+    ├── families/                  # Gradient-styled language classification browsing
+    ├── settings/                  # SSH, API key, display theme, and marker scale controllers
+    ├── chat/                      # AI assistant query interface
+    └── tours/                     # Guided fly-to sequences on Google Earth
 ```
+
+### Key Architectural Concepts
+1. **Dependency Injection (DI)**: Orchestrated via **GetIt** (configured in `locator.dart`). All core services and repositories are registered here and injected into view models via constructors. This decouples logic and allows easy mock-injection for testing.
+2. **State Management**: Orchestrated via **Provider**. Screens watch corresponding ViewModels (which extend `ChangeNotifier`) to reactively rebuild.
+3. **Layer Separation**: The data layer is completely independent of the UI representation. ViewModels process data from the repository layer and publish states consumed by presentation widgets.
+
 
 ### KML-First Design
 
