@@ -364,6 +364,55 @@ class KmlService {
     });
   }
 
+  /// Generate a Google Earth compatible gx:Tour KML document.
+  static String generateTourKml(String tourName, List<Language> languages) {
+    final builder = XmlBuilder();
+    builder.processing('xml', 'version="1.0" encoding="UTF-8"');
+    builder.element('kml',
+        namespaces: {
+          _kmlNamespace: '',
+          'http://www.google.com/kml/ext/2.2': 'gx',
+        },
+        nest: () {
+      builder.element('Document', nest: () {
+        builder.element('name', nest: 'Tour: $tourName');
+        builder.element('open', nest: '1');
+
+        // Generate individual styles for each language in the tour
+        for (final lang in languages) {
+          _buildIndividualStyle(builder, lang);
+        }
+
+        // Generate placemarks so they are visible as slides/points
+        for (final lang in languages) {
+          _buildPlacemark(builder, lang);
+        }
+
+        builder.element('gx:Tour', nest: () {
+          builder.element('name', nest: 'Play Tour');
+          builder.element('gx:Playlist', nest: () {
+            for (final lang in languages) {
+              builder.element('gx:FlyTo', nest: () {
+                builder.element('gx:duration', nest: '5.0');
+                builder.element('gx:flyToMode', nest: 'smooth');
+                _buildLookAt(
+                  builder,
+                  latitude: lang.latitude,
+                  longitude: lang.longitude,
+                );
+              });
+              builder.element('gx:Wait', nest: () {
+                builder.element('gx:duration', nest: '3.0');
+              });
+            }
+          });
+        });
+      });
+    });
+
+    return builder.buildDocument().toXmlString(pretty: true, indent: '  ');
+  }
+
   // ─── Utilities ──────────────────────────────────────────────────────────────
 
   /// Escape HTML special characters for CDATA content.

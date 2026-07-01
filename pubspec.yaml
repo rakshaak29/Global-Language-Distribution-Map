@@ -21,6 +21,9 @@ dependencies:
   flutter_tts: ^4.2.5
   url_launcher: ^6.2.5
   dartssh2: ^2.8.2
+  google_generative_ai: ^0.4.6
+  get_it: ^7.6.0
+
 
 dev_dependencies:
   flutter_test:
